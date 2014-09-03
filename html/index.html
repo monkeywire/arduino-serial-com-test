@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Arduino Demo</title>
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
+        <!--[if IE]><script type="text/javascript" src="excanvas.js"></script><![endif]-->
+        <script src="js/jquery.knob.js"></script>
+
+        <!-- Latest compiled and minified CSS -->
+        <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+
+        <!-- Optional theme -->
+        <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
+
+        <!-- Latest compiled and minified JavaScript -->
+        <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+    </head>
+    <body>
+    <div class="container-fluid">
+        <div class="row">
+            <h1 class="text-center">Arduino Demo</h1>
+        </div>
+        <div class="row">
+            <center>
+                <input type="text" value="100" class="blink">
+            </center>
+        </div>
+        <div class="row">
+            <h1 class="text-center"><small>Set Blink Delay in Milliseconds</small></h1>
+        </div>
+        <div class="row">
+            <center>
+                <input type="text" value="100" data-fgColor="#86D968" class="pwm">
+            </center>
+        </div>
+        <div class="row">
+            <h1 class="text-center"><small>Set PWM Duty Cycle (Pin 11)</small></h1>
+        </div>
+    </div>
+    </body>
+    <script>
+
+        var host = "192.168.1.100";
+        var setDelayFn = debounce(function(v) {
+            $.getJSON("http://" + host + ":8080/set?param=blink&value=" + v);
+        }, 10);
+
+        var setDutyCycleFn = debounce(function(v) {
+            v = Math.round(v / .390);  //Duty cycle is a number between 0 and 255
+            $.getJSON("http://" + host + ":8080/set?param=pwm&value=" + v);
+        }, 10);
+
+        $(function() {
+            $(".blink").knob({
+                'min' : 10,
+                'max' : 500,
+
+                'release' : setDelayFn,
+                'change'  : setDelayFn
+            });
+
+            $(".pwm").knob({
+                'min' : 0,
+                'max' : 99,
+
+                'release' : setDutyCycleFn,
+                'change'  : setDutyCycleFn,
+            });
+
+        });
+
+        function debounce(func, wait, immediate) {
+            var timeout;
+            return function() {
+                var context = this, args = arguments;
+                clearTimeout(timeout);
+                timeout = setTimeout(function() {
+                    timeout = null;
+                    if (!immediate) func.apply(context, args);
+                }, wait);
+            if (immediate && !timeout) func.apply(context, args);
+        };
+};
+
+    </script>
+</html>
